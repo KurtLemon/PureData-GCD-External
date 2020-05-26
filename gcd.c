@@ -10,6 +10,7 @@ typedef struct _gcd {
     t_object    x_obj;
     t_float     gcd_val;
     t_float     val_A, val_B;
+    t_inlet     *in_val_A, *in_val_B;
     t_outlet    *out_gcd;
 } t_gcd;
 
@@ -37,10 +38,21 @@ void gcd_onBang(t_gcd *x) {
     outlet_float(x -> out_gcd, x -> gcd_val);
 }
 
+void gcd_onSet_A(t_gcd *x, t_floatarg f) {
+    gcd_setVals(x, f, x->val_B);
+}
+
+void gcd_onSet_B(t_gcd *x, t_floatarg f) {
+    gcd_setVals(x, x->val_A, f);
+}
+
 void *gcd_new(t_floatarg f1, t_floatarg f2) {
     t_gcd *x = (t_gcd *) pd_new(gcd_class);
     gcd_setVals(x, f1, f2);
     x -> out_gcd = outlet_new(&x -> x_obj, &s_float);
+
+    x -> in_val_A = inlet_new(&x -> x_obj, &x -> x_obj.ob_pd, &s_float, gensym("inVal_A"));
+    x -> in_val_B = inlet_new(&x -> x_obj, &x -> x_obj.ob_pd, &s_float, gensym("inVal_B"));
 
     return (void *) x;
 }
@@ -59,4 +71,6 @@ void gcd_setup(void) {
                           0);
     class_addfloat(gcd_class, (t_method) gcd_onFloat);
     class_addbang(gcd_class, (t_method) gcd_onBang);
+    class_addmethod(gcd_class, (t_method) gcd_onSet_A, gensym("inVal_A"), A_DEFFLOAT, 0);
+    class_addmethod(gcd_class, (t_method) gcd_onSet_B, gensym("inVal_B"), A_DEFFLOAT, 0);
 }
