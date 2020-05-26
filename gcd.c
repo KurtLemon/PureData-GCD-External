@@ -1,7 +1,3 @@
-//
-// Created by Kurt Lamon on 5/25/2020.
-//
-
 #include "m_pd.h"
 
 static  t_class *gcd_class;
@@ -13,6 +9,22 @@ typedef struct _gcd {
     t_inlet     *in_val_A, *in_val_B;
     t_outlet    *out_gcd;
 } t_gcd;
+
+int gcd(int a, int b) {
+    if (a == 0) {
+        return b;
+    }
+    if (b == 0) {
+        return a;
+    }
+    if (a == b) {
+        return a;
+    }
+    if (a > b) {
+        return gcd(a - b, b);
+    }
+    return gcd(a, b - a);
+}
 
 void gcd_setVals(t_gcd *x, t_floatarg f1, t_floatarg f2) {
     x->val_A = (f1 <= 0) ? 1 : f1;
@@ -29,6 +41,9 @@ void gcd_resetVal(t_gcd *x) {
  * @param x
  */
 void gcd_onBang(t_gcd *x) {
+    t_int val_A = x->val_A;
+    t_int val_B = x->val_B;
+    x->gcd_val = gcd(val_A, val_B);
     outlet_float(x->out_gcd, x->gcd_val);
 }
 
@@ -78,6 +93,7 @@ void gcd_setup(void) {
                           A_DEFFLOAT,
                           A_DEFFLOAT,
                           0);
+
     class_addbang(gcd_class, (t_method) gcd_onBang);
     class_addlist(gcd_class, (t_method) gcd_onList);
     class_addmethod(gcd_class, (t_method) gcd_onReset, gensym("reset"), 0);
